@@ -21,7 +21,7 @@ def extract_pdf_text(pdf_bytes):
     return [page.get_text() for page in doc]
 
 # ---------- Highlight differences ----------
-def highlight_differences_clustered(img1, img2, padding=30, min_area=100):
+def highlight_differences_clustered(img1, img2, padding=20, min_area=100):
     h = min(img1.shape[0], img2.shape[0])
     w = min(img1.shape[1], img2.shape[1])
     img1 = img1[:h, :w]
@@ -34,7 +34,6 @@ def highlight_differences_clustered(img1, img2, padding=30, min_area=100):
     diff = cv2.absdiff(img1, img2)
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
-
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     boxes = []
@@ -119,48 +118,13 @@ if pdf1 and pdf2:
 
     mode = st.sidebar.radio(
         "Comparison Mode",
-        ["Auto (Aligned Pages)", "Manual Page Selection", "Text Diff Only"]
+        ["Visual Diff", "Text Diff Only"]
     )
 
-    # ---------- AUTO MODE ----------
-    if mode == "Auto (Aligned Pages)":
+    # ---------- Visual Diff ----------
+    if mode == "Visual Diff": 
 
-        pages_with_diffs = [
-            i + 1 for i in range(num_pages)
-            if text1[i] != text2[i]
-        ]
-
-        if pages_with_diffs:
-            st.sidebar.markdown("### 📌 Differences")
-            selected_page = st.sidebar.selectbox(
-                "Jump to page with differences",
-                pages_with_diffs
-            )
-
-            page_idx = selected_page - 1
-
-            with st.spinner(f"Rendering page {selected_page}..."):
-                img1 = render_page(doc1, page_idx)
-                img2 = render_page(doc2, page_idx)
-
-                img1_high, img2_high, has_diff, boxes = highlight_differences_clustered(img1, img2)
-
-                del img1, img2
-                gc.collect()
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(img1_high, caption=f"PDF 1 - Page {selected_page}", use_container_width=True)
-            with col2:
-                st.image(img2_high, caption=f"PDF 2 - Page {selected_page}", use_container_width=True)
-
-        else:
-            st.info("No visual differences detected.")
-
-    # ---------- MANUAL MODE ----------
-    elif mode == "Manual Page Selection": 
-
-        st.sidebar.markdown("### 🔄 Manual Page Comparison")
+        st.sidebar.markdown("### 🔄 Visual Comparison")
 
         page1 = st.sidebar.number_input(
             "PDF 1 - Page",
@@ -198,8 +162,7 @@ if pdf1 and pdf2:
     elif mode == "Text Diff Only":
 
         st.sidebar.markdown("### 📝 Text Diff Navigation")
-
-        # 🔄 NEW: Manual page selection (same as manual mode)
+        
         page1 = st.sidebar.number_input(
             "PDF 1 - Page",
             min_value=1,
@@ -274,26 +237,26 @@ if pdf1 and pdf2:
 
         st.code("\n".join(diff), language="diff")
 
-# Only show full diff in non-text-only modes
-# if mode != "Text Diff Only":
+##Only show full diff in non-text-only modes
+if mode != "Text Diff Only":
 
-#     st.markdown("---")
-#     st.subheader("📝 Textual Differences")
+    st.markdown("---")
+    st.subheader("📝 Textual Differences")
 
-#     for i in range(num_pages):
-#         page_text1 = text1[i].splitlines()
-#         page_text2 = text2[i].splitlines()
+    for i in range(num_pages):
+        page_text1 = text1[i].splitlines()
+        page_text2 = text2[i].splitlines()
 
-#         diff_lines = list(
-#             difflib.unified_diff(
-#                 page_text1,
-#                 page_text2,
-#                 lineterm='',
-#                 fromfile=f'PDF1 Page {i+1}',
-#                 tofile=f'PDF2 Page {i+1}'
-#             )
-#         )
+        diff_lines = list(
+            difflib.unified_diff(
+                page_text1,
+                page_text2,
+                lineterm='',
+                fromfile=f'PDF1 Page {i+1}',
+                tofile=f'PDF2 Page {i+1}'
+            )
+        )
 
-#         if diff_lines:
-#             with st.expander(f"Page {i+1} Text Differences"):
-#                 st.text('\n'.join(diff_lines))
+        if diff_lines:
+            with st.expander(f"Page {i+1} Text Differences"):
+                st.text('\n'.join(diff_lines))
