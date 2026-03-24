@@ -7,7 +7,7 @@ import difflib
 import gc
 
 # ---------- Render SINGLE page to image ----------
-def render_page(doc, i, dpi=150):
+def render_page(doc, i, dpi=300):
     page = doc[i]
     pix = page.get_pixmap(dpi=dpi)
     img = np.frombuffer(pix.samples, dtype=np.uint8)
@@ -21,7 +21,7 @@ def extract_pdf_text(pdf_bytes):
     return [page.get_text() for page in doc]
 
 # ---------- Highlight differences ----------
-def highlight_differences_clustered(img1, img2, padding=20, min_area=100):
+def highlight_differences_clustered(img1, img2, padding=20, min_area=10):
     h = min(img1.shape[0], img2.shape[0])
     w = min(img1.shape[1], img2.shape[1])
     img1 = img1[:h, :w]
@@ -33,7 +33,7 @@ def highlight_differences_clustered(img1, img2, padding=20, min_area=100):
 
     diff = cv2.absdiff(img1, img2)
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     boxes = []
