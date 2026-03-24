@@ -275,25 +275,25 @@ if pdf1 and pdf2:
         st.code("\n".join(diff), language="diff")
 
 # Only show full diff in non-text-only modes
-if mode != "Text Diff Only":
+# if mode != "Text Diff Only":
 
-    st.markdown("---")
-    st.subheader("📝 Textual Differences")
+#     st.markdown("---")
+#     st.subheader("📝 Textual Differences")
 
-    for i in range(num_pages):
-        page_text1 = text1[i].splitlines()
-        page_text2 = text2[i].splitlines()
+#     for i in range(num_pages):
+#         page_text1 = text1[i].splitlines()
+#         page_text2 = text2[i].splitlines()
 
-        diff_lines = list(
-            difflib.unified_diff(
-                page_text1,
-                page_text2,
-                lineterm='',
-                fromfile=f'PDF1 Page {i+1}',
-                tofile=f'PDF2 Page {i+1}'
-            )
-        )
+#         diff_lines = list(
+#             difflib.unified_diff(
+#                 page_text1,
+#                 page_text2,
+#                 lineterm='',
+#                 fromfile=f'PDF1 Page {i+1}',
+#                 tofile=f'PDF2 Page {i+1}'
+#             )
+#         )
 
-        if diff_lines:
-            with st.expander(f"Page {i+1} Text Differences"):
-                st.text('\n'.join(diff_lines))
+#         if diff_lines:
+#             with st.expander(f"Page {i+1} Text Differences"):
+#                 st.text('\n'.join(diff_lines))
